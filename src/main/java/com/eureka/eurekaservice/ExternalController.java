@@ -60,7 +60,7 @@ public class ExternalController {
 				.action("connect")
 				.customData("test-custom-data")
 				.continueOnFail(false)
-				.timeout(100)
+				.timeout(1000000)
 				.from(from)
 				.to(to)
 				.build();
