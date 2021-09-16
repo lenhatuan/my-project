@@ -1,6 +1,7 @@
 package com.eureka.eurekaservice;
 
 import com.eureka.eurekaservice.dto.*;
+import com.eureka.eurekaservice.dto.Record;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,11 +26,24 @@ public class ExternalController {
 		return new ResponseEntity<>(ApiTokenResponse.builder().token(token).build(), HttpStatus.OK);
 	}
 
+	@PostMapping(path = "/video_call/recording")
+	@CrossOrigin
+	public ResponseEntity record(@RequestBody ApiRecordRequest request) {
+		String requestStr = new Gson().toJson(request);
+		log.info("RECORD REQUEST: {}", requestStr);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@GetMapping(path = "/video_call/answer_url")
 	public @ResponseBody
-	List<ApiSccoResponse> getScco(ApiSccoRequest request) {
+	List getScco(ApiSccoRequest request) {
 		String requestStr = new Gson().toJson(request);
 		log.info("SCCO REQUEST: {}", requestStr);
+		Record record = Record.builder()
+				.action("record")
+				.eventUrl("eventUrl")
+				.format("mp3")
+				.build();
 		From from = From
 				.builder()
 				.type("internal")
@@ -51,6 +65,6 @@ public class ExternalController {
 				.from(from)
 				.to(to)
 				.build();
-		return Arrays.asList(apiSccoResponse);
+		return Arrays.asList(apiSccoResponse, record);
 	}
 }
