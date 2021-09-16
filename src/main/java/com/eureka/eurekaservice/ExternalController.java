@@ -41,7 +41,7 @@ public class ExternalController {
 		log.info("SCCO REQUEST: {}", requestStr);
 		Record record = Record.builder()
 				.action("record")
-				.eventUrl("eventUrl")
+				.eventUrl("https://demo-deploy-sv.herokuapp.com/api/v1/video_call/recording")
 				.format("mp3")
 				.build();
 		From from = From
@@ -65,6 +65,8 @@ public class ExternalController {
 				.from(from)
 				.to(to)
 				.build();
-		return Arrays.asList(apiSccoResponse, record);
+		List response = Arrays.asList(apiSccoResponse, record);
+		log.info("SCCO RESPONSE: {}", new Gson().toJson(response));
+		return response;
 	}
 }
