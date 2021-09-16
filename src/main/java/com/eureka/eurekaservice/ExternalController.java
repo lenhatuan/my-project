@@ -1,6 +1,8 @@
 package com.eureka.eurekaservice;
 
 import com.eureka.eurekaservice.dto.*;
+import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/v1")
+@Slf4j
 public class ExternalController {
 
 	@PostMapping(path = "/video_call/token")
@@ -25,6 +28,8 @@ public class ExternalController {
 	@GetMapping(path = "/video_call/answer_url")
 	public @ResponseBody
 	List<ApiSccoResponse> getScco(ApiSccoRequest request) {
+		String requestStr = new Gson().toJson(request);
+		log.info("SCCO REQUEST: {}", requestStr);
 		From from = From
 				.builder()
 				.type("internal")
