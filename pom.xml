@@ -56,6 +56,10 @@
 			<artifactId>sqlite-jdbc</artifactId>
 			<version>3.16.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
