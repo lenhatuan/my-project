@@ -1,17 +1,15 @@
 package com.eureka.eurekaservice;
 
+import com.eureka.eurekaservice.db.MyStorage;
 import com.eureka.eurekaservice.dto.Record;
 import com.eureka.eurekaservice.dto.*;
 import com.eureka.eurekaservice.entity.SccoRecord;
-import com.eureka.eurekaservice.repo.DbRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,9 +20,6 @@ import java.util.Map;
 @RequestMapping(path = "/api/v1")
 @Slf4j
 public class ExternalController {
-
-	@Autowired
-	private DbRepository repository;
 
 	static final String recordUri = "https://api.stringee.com/v1/stringeecall2/recording";
 
@@ -53,18 +48,22 @@ public class ExternalController {
 	List getScco(ApiSccoRequest request) {
 		String requestStr = new Gson().toJson(request);
 		log.info("SCCO REQUEST: {}", requestStr);
-		repository.saveAll(Arrays.asList(SccoRecord.builder()
+
+		MyStorage.getInstance().addRecord(SccoRecord.builder()
+						.id(MyStorage.getInstance().getListRecord().size() + 1)
 						.userId(request.getTo())
 						.callId(request.getCallId())
 						.callTo(request.getFrom())
 						.customerData(request.getCustom())
-						.build(),
+						.build());
+		MyStorage.getInstance().addRecord(
 				SccoRecord.builder()
+						.id(MyStorage.getInstance().getListRecord().size() + 1)
 						.userId(request.getUserId())
 						.callId(request.getCallId())
 						.callTo(request.getTo())
 						.customerData(request.getCustom())
-						.build()));
+						.build());
 		Record record = Record.builder()
 				.action("record")
 				.eventUrl("https://demo-deploy-sv.herokuapp.com/api/v1/video_call/recording")
@@ -99,7 +98,7 @@ public class ExternalController {
 	@GetMapping(path = "/video_call/record_list")
 	@CrossOrigin
 	public ResponseEntity<List<SccoRecord>> getRecordLid() {
-		return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
+		return new ResponseEntity<>(MyStorage.getInstance().getListRecord(), HttpStatus.OK);
 	}
 
 	@GetMapping(path = "/video_call/record_download")
@@ -107,7 +106,10 @@ public class ExternalController {
 	public String downloadRecord(@RequestParam(name = "recordId") Integer recordId) {
 
 		RestTemplate restTemplate = new RestTemplate();
-		SccoRecord sccoRecord = repository.findById(recordId).get();
+		SccoRecord sccoRecord = MyStorage.getInstance().getListRecord()
+				.stream()
+				.filter(o -> o.getId() == recordId)
+				.findFirst().get();
 
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("userId", sccoRecord.getUserId());
@@ -139,7 +141,7 @@ public class ExternalController {
 				entity2,
 				byte[].class);*/
 		String recordUri = "https://api.stringee.com/v1/stringeecall2/recording";
-		recordUri = recordUri + "?call_id=" + sccoRecord.getCallId() + "&user_id=" + sccoRecord.getUserId() + "&access_token=" +tokenResponse.getBody().getToken();
+		recordUri = recordUri + "?call_id=" + sccoRecord.getCallId() + "&user_id=" + sccoRecord.getUserId() + "&access_token=" + tokenResponse.getBody().getToken();
 		return recordUri;
 		//return new ResponseEntity<>(record, HttpStatus.OK);
 	}

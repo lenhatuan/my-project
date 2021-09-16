@@ -1,13 +1,2 @@
 server:
   port: 8001
-spring:
-  datasource:
-    hikari:
-      connection-timeout: 20000
-      maximum-pool-size: 5
-    url: jdbc:postgresql://db-postgresql-dev-do-user-9459334-0.b.db.ondigitalocean.com:25060/defaultdb
-    username: doadmin
-    password: c6fivioaiw9e105p
-  jpa:
-    hibernate:
-      ddl-auto: create
