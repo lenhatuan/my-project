@@ -1,20 +1,35 @@
 package com.eureka.eurekaservice;
 
-import com.eureka.eurekaservice.dto.*;
 import com.eureka.eurekaservice.dto.Record;
+import com.eureka.eurekaservice.dto.*;
+import com.eureka.eurekaservice.entity.SccoRecord;
+import com.eureka.eurekaservice.repo.DbRepository;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/v1")
 @Slf4j
 public class ExternalController {
+
+	@Autowired
+	private DbRepository repository;
+
+	static final String recordUri = "https://api.stringee.com/v1/stringeecall2/recording";
+
+	static final String tokenUri = "https://demo-deploy-sv.herokuapp.com/api/v1/video_call/token";
+
 
 	@PostMapping(path = "/video_call/token")
 	@CrossOrigin
@@ -38,6 +53,18 @@ public class ExternalController {
 	List getScco(ApiSccoRequest request) {
 		String requestStr = new Gson().toJson(request);
 		log.info("SCCO REQUEST: {}", requestStr);
+		repository.saveAll(Arrays.asList(SccoRecord.builder()
+						.userId(request.getTo())
+						.callId(request.getCallId())
+						.callTo(request.getFrom())
+						.customerData(request.getCustom())
+						.build(),
+				SccoRecord.builder()
+						.userId(request.getUserId())
+						.callId(request.getCallId())
+						.callTo(request.getTo())
+						.customerData(request.getCustom())
+						.build()));
 		Record record = Record.builder()
 				.action("record")
 				.eventUrl("https://demo-deploy-sv.herokuapp.com/api/v1/video_call/recording")
@@ -68,4 +95,51 @@ public class ExternalController {
 		log.info("SCCO RESPONSE: {}", new Gson().toJson(response));
 		return response;
 	}
+
+	@GetMapping(path = "/video_call/record_list")
+	public ResponseEntity<List<SccoRecord>> getRecordLid() {
+		return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
+	}
+
+	@GetMapping(path = "/video_call/record_download")
+	public String downloadRecord(@RequestParam(name = "recordId") Integer recordId) {
+
+		RestTemplate restTemplate = new RestTemplate();
+		SccoRecord sccoRecord = repository.findById(recordId).get();
+
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("userId", sccoRecord.getUserId());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
+
+		ResponseEntity<ApiTokenResponse> tokenResponse = restTemplate
+				.exchange(tokenUri, HttpMethod.POST, entity, ApiTokenResponse.class);
+
+		Map<String, String> urlParams = new HashMap<>();
+		urlParams.put("call_id", sccoRecord.getCallId());
+		urlParams.put("user_id", sccoRecord.getUserId());
+		urlParams.put("access_token", tokenResponse.getBody().getToken());
+
+		/*HttpHeaders headers2 = new HttpHeaders();
+		headers2.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+
+		HttpEntity<?> entity2 = new HttpEntity<>(urlParams, headers2);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(recordUri)
+				.queryParam("call_id", sccoRecord.getCallId())
+				.queryParam("user_id", sccoRecord.getUserId())
+				.queryParam("access_token", tokenResponse.getBody().getToken());
+		ResponseEntity<byte[]> record = restTemplate.exchange(
+				builder.toUriString(),
+				HttpMethod.GET,
+				entity2,
+				byte[].class);*/
+		String recordUri = "https://api.stringee.com/v1/stringeecall2/recording";
+		recordUri = recordUri + "?call_id=" + sccoRecord.getCallId() + "&user_id=" + sccoRecord.getUserId() + "&access_token=" +tokenResponse.getBody().getToken();
+		return recordUri;
+		//return new ResponseEntity<>(record, HttpStatus.OK);
+	}
+
 }

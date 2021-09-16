@@ -1,2 +1,12 @@
 server:
   port: 8001
+spring:
+  jpa:
+    database-platform: com.eureka.eurekaservice.db.SQLDialect
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:sqlite:sqlitesample.db
+    driver-class-name: org.sqlite.JDBC
+    username: admin
+    password: admin
