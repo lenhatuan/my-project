@@ -64,7 +64,7 @@ public class ExternalController {
 				.from(from)
 				.to(to)
 				.build();
-		List response = Arrays.asList(apiSccoResponse, record);
+		List response = Arrays.asList(record, apiSccoResponse);
 		log.info("SCCO RESPONSE: {}", new Gson().toJson(response));
 		return response;
 	}
