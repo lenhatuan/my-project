@@ -1,13 +1,9 @@
 package com.eureka.eurekaservice;
 
-import com.eureka.eurekaservice.dto.ApiSccoRequest;
-import com.eureka.eurekaservice.dto.ApiSccoResponse;
-import com.eureka.eurekaservice.dto.From;
-import com.eureka.eurekaservice.dto.To;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.eureka.eurekaservice.dto.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +11,16 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/api/v1")
 public class ExternalController {
+
+	@PostMapping(path = "/video_call/token")
+	@CrossOrigin
+	public ResponseEntity<ApiTokenResponse> getToken(@RequestBody ApiTokenRequest request) {
+		String token = TokenUtil.genAccessToken(request.getUserId(),
+				"SKnisBolJVGOhRoa61exg48aNhA6N5qpRb",
+				"MGc4N3dWSWg1Rzd6YXdqMGx3c1ZTRmI2TXRNUWZZ",
+				3600);
+		return new ResponseEntity<>(ApiTokenResponse.builder().token(token).build(), HttpStatus.OK);
+	}
 
 	@GetMapping(path = "/video_call/answer_url")
 	public @ResponseBody
