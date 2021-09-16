@@ -97,11 +97,13 @@ public class ExternalController {
 	}
 
 	@GetMapping(path = "/video_call/record_list")
+	@CrossOrigin
 	public ResponseEntity<List<SccoRecord>> getRecordLid() {
 		return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
 	}
 
 	@GetMapping(path = "/video_call/record_download")
+	@CrossOrigin
 	public String downloadRecord(@RequestParam(name = "recordId") Integer recordId) {
 
 		RestTemplate restTemplate = new RestTemplate();
