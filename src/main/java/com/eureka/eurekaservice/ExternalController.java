@@ -26,8 +26,7 @@ public class ExternalController {
 		return new ResponseEntity<>(ApiTokenResponse.builder().token(token).build(), HttpStatus.OK);
 	}
 
-	@PostMapping(path = "/video_call/recording")
-	@CrossOrigin
+	@GetMapping(path = "/video_call/recording")
 	public ResponseEntity record(@RequestBody ApiRecordRequest request) {
 		String requestStr = new Gson().toJson(request);
 		log.info("RECORD REQUEST: {}", requestStr);
