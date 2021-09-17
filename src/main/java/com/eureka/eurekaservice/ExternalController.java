@@ -146,4 +146,11 @@ public class ExternalController {
 		//return new ResponseEntity<>(record, HttpStatus.OK);
 	}
 
+	@PostMapping(path = "/video_call/event_url")
+	@CrossOrigin
+	public ResponseEntity receiveCallEvent(@RequestBody CallEventRequest request) {
+		String requestStr = new Gson().toJson(request);
+		log.info("EVENT REQUEST: {}", requestStr);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }
