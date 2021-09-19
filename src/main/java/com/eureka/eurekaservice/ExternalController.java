@@ -67,7 +67,7 @@ public class ExternalController {
 		Record record = Record.builder()
 				.action("record")
 				.eventUrl("https://demo-deploy-sv.herokuapp.com/api/v1/video_call/recording")
-				.format("mp3")
+				.format("mp4")
 				.build();
 		From from = From
 				.builder()
